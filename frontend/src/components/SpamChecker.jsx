@@ -1,30 +1,39 @@
 import React, { useState } from "react";
 
+const API_URL = "https://spam-detection-backend-vbzq.onrender.com";
+
 const SpamChecker = () => {
   const [input, setInput] = useState("");
   const [result, setResult] = useState("");
   const [confidence, setConfidence] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleCheck = async () => {
     setLoading(true);
     setResult("");
     setConfidence(null);
+    setError("");
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/check_spam", {
+      const response = await fetch(`${API_URL}/check_spam`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ text: input }),
       });
 
-      const data = await response.json();
+      if (!response.ok) {
+        throw new Error("Backend error");
+      }
 
-      // ✅ FIXED FOR NEW BACKEND RESPONSE
-      setResult(data.label);          // "spam" or "safe"
-      setConfidence(data.confidence); // number
-    } catch {
-      setResult("error");
+      const data = await response.json();
+      setResult(data.label);
+      setConfidence(data.confidence);
+    } catch (err) {
+      console.error(err);
+      setError("Error connecting to backend");
     }
 
     setLoading(false);
@@ -40,40 +49,32 @@ const SpamChecker = () => {
         onChange={(e) => setInput(e.target.value)}
       ></textarea>
 
-      <button onClick={handleCheck}>CHECK</button>
+      <button onClick={handleCheck} disabled={loading}>
+        CHECK
+      </button>
 
-      {loading && (
-        <div className="loader">
-          <div className="ring"></div>
-        </div>
-      )}
+      {loading && <div className="loader"><div className="ring"></div></div>}
 
       {!loading && result === "safe" && (
         <div className="result safe">
           ✔ SAFE
-          {confidence !== null && (
-            <div className="confidence">
-              Confidence: {(confidence * 100).toFixed(1)}%
-            </div>
-          )}
+          <div className="confidence">
+            Confidence: {(confidence * 100).toFixed(1)}%
+          </div>
         </div>
       )}
 
       {!loading && result === "spam" && (
         <div className="result spam">
           ⚠ SPAM DETECTED
-          {confidence !== null && (
-            <div className="confidence">
-              Confidence: {(confidence * 100).toFixed(1)}%
-            </div>
-          )}
+          <div className="confidence">
+            Confidence: {(confidence * 100).toFixed(1)}%
+          </div>
         </div>
       )}
 
-      {!loading && result === "error" && (
-        <div className="result spam">
-          ❌ Error connecting to backend
-        </div>
+      {!loading && error && (
+        <div className="result spam">❌ {error}</div>
       )}
     </div>
   );
