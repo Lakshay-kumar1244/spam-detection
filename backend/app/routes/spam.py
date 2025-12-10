@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-from backend.app.models.spam_model import predict_spam
+# from backend.app.models.spam_model import predict_spam
+from app.models.spam_model import predict_spam
 
 router = APIRouter()
 
