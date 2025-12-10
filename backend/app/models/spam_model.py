@@ -8,6 +8,7 @@ import re
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "spam_model.pkl")
 
+
 # ---------------- LOAD MODEL ----------------
 # spam_model.pkl MUST be saved as: joblib.dump((model, vectorizer), ...)
 model, vectorizer = joblib.load(MODEL_PATH)
